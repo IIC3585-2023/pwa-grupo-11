@@ -1,8 +1,8 @@
 const staticAssets = [
     './',
     './index.html',
-    './styles.css',
-    './functionality.js'
+    './src/styles/styles.css',
+    './src/scripts/functionality.js'
 ];
 
 const cacheName = 'notesCache';
@@ -25,18 +25,31 @@ self.addEventListener('install', async event => {
 
 const networkFirstThenCache = async (request) => {
     const cache = await caches.open(cacheName);
-    try {
-        // Fetch request
-        const response = await fetch(request);
-        // Save into cache
-        cache.put(request, response.clone())
-        console.log('Used network')
-        return response
-    } 
-    catch (error) {
-        console.log('Falling back to cache...')
-        const res = await cache.match(request)
-        return res
+    if(request.method == "GET"){
+        try {
+            // Fetch request
+            const response = await fetch(request);
+            // Save into cache
+            cache.put(request, response.clone())
+            console.log('Used network')
+            return response
+        } 
+        catch (error) {
+            console.log('Falling back to cache...')
+            const res = await cache.match(request)
+            if(res == undefined) return new Response("", {"status": 404, "statusText": "cache-network miss"});
+            return res
+        }
+    }
+    else{
+        try {
+            // Fetch request
+            const response = await fetch(request);
+            return response
+        } 
+        catch (error) {
+            return new Response("", {"status": 404, "statusText": "network miss"});
+        }
     }
 }
 
