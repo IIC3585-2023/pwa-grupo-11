@@ -1,5 +1,53 @@
 const url = "https://backend-pwa.onrender.com";
 
+let requests = [];
+
+const executeRequestQueue = async () => {
+    const requestQueue = requests;
+    if(requestQueue.length == 0) return;
+    while(requestQueue.length > 0){
+        const [request, id] = requestQueue.shift();
+        
+        let url = request.url;
+        if(request.type == "deleteNote"){
+            url = request.url + idAssociations[id];
+        }
+
+        if(request.type == "editNote"){
+            url = request.url + idAssociations[id];
+        }
+
+        const req = new Request(url, {
+            method: request["method"],
+            headers: request["headers"],
+            body: request["body"],
+        });
+        const res = await fetch(req);
+
+        if(res.statusText == "network miss"){
+            requestQueue.unshift([request, id]);
+            break;
+        }
+        else{
+            console.log("Executed:", request)
+        }
+
+        const resBody = await res.json();
+
+        if(request.type == "createNote"){
+            const noteID = resBody["noteID"];
+            idAssociations[id] = noteID;
+        }
+    }
+    console.log(idAssociations)
+}
+
+const executeRequest = async (request, id) => {
+    requests.push([request, id]);
+
+    executeRequestQueue();
+}
+
 const createNote = async() =>{
 
     const noteText = document.getElementById("short-note").value;
@@ -24,28 +72,10 @@ const createNote = async() =>{
         })
     };
 
-    //Send note
-    const res = await fetch(`${request["url"]}`, {
-        method: request["method"],
-        headers: request["headers"],
-        body: request["body"],
-        id: nextID - 1
-    });
-
-    if(res.statusText == "network miss"){
-        console.log("miss")
-        const queuedRequests = JSON.parse(localStorage.getItem("queuedRequests"));
-        console.log(queuedRequests)
-        localStorage.setItem("queuedRequests", JSON.stringify([...queuedRequests, request]));
-    }
-    else{
-        console.log(await res.json())
-    }
+    executeRequest(request, nextID - 1);
 }
 
-//desc, notes
 let notepad = {}
-//id_local: id_remote
 let idAssociations = {}
 let nextID = 0;
 
@@ -61,108 +91,71 @@ function colorNote(index) {
 }
 
 function deleteNote(index) {
-    var parent = document.getElementById("notes");
-    var child = parent.children[index];
-    parent.removeChild(child);
-    updateTrashIconsOnClick(parent);
-    updateCheckBoxesIndex(parent, index);
-}
+    const parent = document.getElementById("notes");
+    const children = parent.children;
+    const newChildren = [];
+    for(let i = 0; i < children.length; i++){
+        const child = children[i];
+        if(child.id != index) newChildren.push(child)
+    }
 
-function updateTrashIconsOnClick(parent) {
-    const trashIcons = parent.querySelectorAll('.far.fa-trash-alt');
-    trashIcons.forEach((icon, index) => {
-        icon.setAttribute('onclick', `deleteNote(${index})`);
-    });
-}
+    const request = {
+        "url": `${url}/notepad/${notepad["notepadName"]}/`,
+        "method": "DELETE",
+        "headers": {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        "type": "deleteNote"
+    };
 
-function updateCheckBoxesIndex(parent, deletedIndex) {
-    const checkBoxes = parent.querySelectorAll('input[type="checkbox"]');
-    checkBoxes.forEach((checkBox, index) => {
-        if (index >= deletedIndex) {
-            checkBox.setAttribute('onclick', `colorNote(${index})`);
-            checkBox.setAttribute('id', `note-${index}`);
-        }
-    });
+    parent.replaceChildren(...newChildren);
+
+    executeRequest(request, index);
 }
 
 function deleteNotes() {
     const parent = document.getElementById("notes");
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
-}
+    const newChildren = [];
 
-const sampleApiURL = "https://cat-fact.herokuapp.com"
-sampleFetch = async () => {
-    const res = fetch(`${sampleApiURL}/facts`, {})
-    console.log(res)
+    for(const index in idAssociations){
+        const request = {
+            "url": `${url}/notepad/${notepad["notepadName"]}/`,
+            "method": "DELETE",
+            "headers": {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            "type": "deleteNote"
+        };
+
+        executeRequest(request, index);
+    }
+
+    parent.replaceChildren(...newChildren);
 }
 
 const sync = async () => {
-    const queuedRequests = JSON.parse(localStorage.getItem("queuedRequests"));
-
-    while (queuedRequests.length > 0) {
-        const request = queuedRequests.shift();
-
-        const res = await fetch(`${request["url"]}`, {
-            method: request["method"],
-            headers: request["headers"],
-            body: request["body"]
-        });
-
-        const body = {}
-
-        try{
-            body = await res.json()
-        }
-        catch{
-            
-        }
-
-        if(res.statusText == "network miss"){
-            //Notify user he lost connection
-            console.log("Lost internet connection while syncing");
-            queuedRequests.unshift(request);
-            break;
-        }
-
-        if(request["type"] == "createBoard"){
-            if(res.status == 200){
-                //Pop up catastrophic failure
-                window.location.replace("../../index.html");
-            }
-        }
-
-        if(request["type"] == "createNote"){
-            if(res.status == 200){
-                const noteID = body["noteID"];
-                idAssociations[request["id"]] = noteID;
-            }
-        }
-
-        //editNote
-        //deleteNote
-    }
-    
-    //Get updated state
+    await executeRequestQueue();
     updateState();
 }
 
 const loadNotepadData = () => {
     const notepadData = localStorage.getItem("notepadData");
-    notepad = JSON.parse(notepadData);
+    const boardRequest = JSON.parse(localStorage.getItem("queuedRequests"));
 
-    const notes = notepad["notes"];
-    let idx = 0;
-    for(key in notes){
-        idAssociations[idx] = key;
-        idx++;
+    if(boardRequest.length != 0){
+        const request = boardRequest[0];
+        const req = new Request(request["url"]);
+
+        req.method = request["method"];
+        req.headers = request["headers"];
+        req.body = request["body"];
+        
+        requests.push(req);
     }
-    nextID = idx;
 
-    setNotepadName();
-    setNotepadDescription();
-    setNotes();
+    notepad = JSON.parse(notepadData);
 }
 
 const setNotepadName = () => {
@@ -175,39 +168,71 @@ const setNotepadDescription = () => {
     descriptionElement.value = notepad["description"];
 }
 
-const setNotes = () => {
+const drawNotes = () => {
 
     const noteTable = document.getElementById("notes");
 
     const newChildren = [];
 
     const notes = notepad["notes"];
-    console.log(notes);
+    console.log(notepad)
     for(let key in idAssociations){
         const id = idAssociations[key]
         const note = newNote(notes[id], key);
         newChildren.push(note);
     }
-    
+    console.log(newChildren);
     noteTable.replaceChildren(...newChildren);
+}
+
+const setNotes = (notepad) => {
+    const notes = notepad["notes"];
+    nextID = 0;
+    idAssociations = {};
+    for(key in notes){
+        idAssociations[nextID] = key;
+        nextID++;
+    }
 }
 
 const updateState = async () => {
     const res = await fetch(`${url}/notepad/${notepad["notepadName"]}`, {method: "GET"});
 
     if(res.statusText == "cache-network miss"){
-        //Couldnt get updated state
-        console.log("errorcirijillo");
+        console.log("No connection couldnt update ");
     }
     else{
         notepad = await res.json();
+        setNotepadDescription();
+        setNotepadName();
+        setNotes(notepad);
+        drawNotes();
     }
 }
 
+const sendEditRequest = (localID, newText) => {
+    console.log(localID, newText)
+
+    const request = {
+        "url": `${url}/notepad/${notepad["notepadName"]}/`,
+        "method": "PUT",
+        "headers": {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        "type": "editNote",
+        "body": JSON.stringify({
+            "noteText": newText
+        })
+    };
+
+    executeRequest(request, localID);
+}
+
 const newNote = (noteText, id) => {
-    console.log(noteText)
     const note = document.createElement("div");
     note.setAttribute("class", "note");
+    note.id = id;
         
     // list of icons
     const iconList = document.createElement("div");
@@ -231,24 +256,41 @@ const newNote = (noteText, id) => {
     checkbox.setAttribute("onclick", `colorNote(${id})`);
 
     // p
-    const p = document.createElement("p");
-    p.innerHTML = noteText;
-    note.appendChild(p);
+    // const p = document.createElement("p");
+    // p.innerHTML = noteText;
+    // note.appendChild(p);
+    const noteTextInput = document.createElement("input");
+    noteTextInput.setAttribute("type", "text");
+    noteTextInput.value = String(noteText);
+    noteTextInput.addEventListener("change", (e) => sendEditRequest(id, noteTextInput.value));
+    note.appendChild(noteTextInput);
 
     return note;
 }
 
-const sendDescriptionChanges = async () => {
+const handleDescriptionChange = () => {
+    const descriptionElement = document.getElementById("note-description");
+    const descriptionText = descriptionElement.value;
+
+    const notepadName = notepad["notepadName"];
+
+    const request = {
+        "url": `${url}/notepad`,
+        "method": "PUT",
+        "headers": {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        "type": "editNotepad",
+        "body": JSON.stringify({
+            "notepadName": notepadName,
+            "newNotepadName": notepadName,
+            "newDescription": descriptionText
+        })
+    };
+
+    executeRequest(request, undefined)
 }
-
-const sendNoteChanges = async () => {
-}
-
-const button = document.getElementById("fetchButton")
-
-button.addEventListener('click', () => {
-    sampleFetch()
-})
-
 
 loadNotepadData();
+sync()

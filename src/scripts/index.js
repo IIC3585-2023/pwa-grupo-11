@@ -32,7 +32,7 @@ const createNotepad = async () => {
         };
 
         const queuedRequests = [];
-        localStorage.setItem("queuedRequests", JSON.stringify([...queuedRequests, createNotepadRequest]));
+        localStorage.setItem("queuedRequests", JSON.stringify([createNotepadRequest]));
     }
 
     else{
@@ -46,8 +46,6 @@ const createNotepad = async () => {
 }
 
 const registerSW = async () => {
-    // await sampleFetch();
-
     if ('serviceWorker' in navigator) {
         try {
             const registration = await navigator.serviceWorker.register('../../serviceworker.js', {scope: './'});

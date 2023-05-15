@@ -6,6 +6,8 @@ const staticAssets = [
 ];
 
 const cacheName = 'notesCache';
+const API_URL = "https://backend-pwa.onrender.com";
+
 
 self.addEventListener('install', async event => {
     const cache = await caches.open(cacheName);
@@ -37,7 +39,8 @@ const networkFirstThenCache = async (request) => {
         catch (error) {
             console.log('Falling back to cache...')
             const res = await cache.match(request)
-            if(res == undefined) return new Response("", {"status": 404, "statusText": "cache-network miss"});
+            console.log(request.url.startsWith(API_URL));
+            if(res == undefined || request.url.startsWith(API_URL) ) return new Response("", {"status": 404, "statusText": "cache-network miss"});
             return res
         }
     }
