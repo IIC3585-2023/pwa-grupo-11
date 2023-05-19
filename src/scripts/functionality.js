@@ -175,13 +175,13 @@ const drawNotes = () => {
     const newChildren = [];
 
     const notes = notepad["notes"];
-    console.log(notepad)
+
     for(let key in idAssociations){
         const id = idAssociations[key]
         const note = newNote(notes[id], key);
         newChildren.push(note);
     }
-    console.log(newChildren);
+    
     noteTable.replaceChildren(...newChildren);
 }
 
@@ -292,5 +292,42 @@ const handleDescriptionChange = () => {
     executeRequest(request, undefined)
 }
 
+
 loadNotepadData();
-sync()
+sync();
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCwQAkUO7gIGop8ykEL9oyGuY5376iTSBw",
+    authDomain: "anonynoteclone.firebaseapp.com",
+    projectId: "anonynoteclone",
+    storageBucket: "anonynoteclone.appspot.com",
+    messagingSenderId: "285797775898",
+    appId: "1:285797775898:web:b7fb75ca0a0eed7441afa3",
+    measurementId: "G-R57G8TM40B"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+// function requestPermission() {
+messaging.requestPermission()
+         .then(() => {
+            console.log("Permission Granted");
+            return messaging.getToken();
+         })
+         .then((token) => {
+            console.log(token)
+         })
+         .catch((e) =>{
+            console.log("Error", e)
+         })
+messaging.onMessage((payload) => {
+    console.log(payload)
+})
+
+// }
+
+// requestPermission();
+
+// document.addEventListener('click', requestPermission);

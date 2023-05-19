@@ -1,3 +1,5 @@
+// importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
+// importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 const staticAssets = [
     './',
     './index.html',
@@ -8,22 +10,26 @@ const staticAssets = [
 const cacheName = 'notesCache';
 const API_URL = "https://backend-pwa.onrender.com";
 
+// const firebaseConfig = {
+//     apiKey: "AIzaSyCwQAkUO7gIGop8ykEL9oyGuY5376iTSBw",
+//     authDomain: "anonynoteclone.firebaseapp.com",
+//     projectId: "anonynoteclone",
+//     storageBucket: "anonynoteclone.appspot.com",
+//     messagingSenderId: "285797775898",
+//     appId: "1:285797775898:web:b7fb75ca0a0eed7441afa3",
+//     measurementId: "G-R57G8TM40B"
+// };
+
+// firebase.initializeApp(firebaseConfig);
+
+// const messaging = firebase.messaging();
+
+// messaging.onMessage((msg) => console.log(msg));
 
 self.addEventListener('install', async event => {
     const cache = await caches.open(cacheName);
     cache.addAll(staticAssets);
 });
-
-// const enableNavigationPreload = async () => {
-//     if (self.registration.navigationPreload) {
-//       // Enable navigation preloads!
-//       await self.registration.navigationPreload.enable();
-//     }
-// };
-  
-// self.addEventListener('activate', (event) => {
-//     event.waitUntil(enableNavigationPreload());
-// });
 
 const networkFirstThenCache = async (request) => {
     const cache = await caches.open(cacheName);
