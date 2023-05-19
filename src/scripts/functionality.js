@@ -17,12 +17,18 @@ const executeRequestQueue = async () => {
             url = request.url + idAssociations[id];
         }
 
-        const req = new Request(url, {
+        const requestData = {
             method: request["method"],
             headers: request["headers"],
-            body: request["body"],
-        });
+        }
+        if (request.body) {
+            requestData.body = request.body
+        }
+
+        const req = new Request(url, requestData);
         const res = await fetch(req);
+
+        console.log(res)
 
         if(res.statusText == "network miss"){
             requestQueue.unshift([request, id]);
@@ -37,6 +43,12 @@ const executeRequestQueue = async () => {
         if(request.type == "createNote"){
             const noteID = resBody["noteID"];
             idAssociations[id] = noteID;
+            for (let note of notepad.notes) {
+                if (note.localId == id) {
+                    note.serverId = noteID;
+                    break;
+                }
+            }
         }
     }
     console.log(idAssociations)
@@ -53,6 +65,13 @@ const createNote = async() =>{
     const noteText = document.getElementById("short-note").value;
 
     const note = newNote(noteText, nextID);
+    
+    notepad.notes.push({
+        localId: nextID,
+        content: noteText,
+        serverId: undefined
+    })
+
     nextID++;
 
     const noteListElement = document.getElementById("notes");
@@ -73,6 +92,7 @@ const createNote = async() =>{
     };
 
     executeRequest(request, nextID - 1);
+    console.log(notepad.notes)
 }
 
 let notepad = {}
@@ -94,10 +114,18 @@ function deleteNote(index) {
     const parent = document.getElementById("notes");
     const children = parent.children;
     const newChildren = [];
-    for(let i = 0; i < children.length; i++){
-        const child = children[i];
-        if(child.id != index) newChildren.push(child)
+
+    let deleteIdx = undefined;
+    for (let idx = 0; idx < notepad.notes.length; idx++) {
+        if (notepad.notes[idx].localId == index) {
+            deleteIdx = idx
+        }
+        else {
+            newChildren.push(children[idx])
+        }
     }
+
+    notepad.notes.splice(deleteIdx, 1);
 
     const request = {
         "url": `${url}/notepad/${notepad["notepadName"]}/`,
@@ -112,6 +140,7 @@ function deleteNote(index) {
     parent.replaceChildren(...newChildren);
 
     executeRequest(request, index);
+    console.log(notepad)
 }
 
 function deleteNotes() {
@@ -137,7 +166,8 @@ function deleteNotes() {
 
 const sync = async () => {
     await executeRequestQueue();
-    updateState();
+    await updateState();
+    // sortNotes()
 }
 
 const loadNotepadData = () => {
@@ -146,13 +176,7 @@ const loadNotepadData = () => {
 
     if(boardRequest.length != 0){
         const request = boardRequest[0];
-        const req = new Request(request["url"]);
-
-        req.method = request["method"];
-        req.headers = request["headers"];
-        req.body = request["body"];
-        
-        requests.push(req);
+        executeRequest(request, undefined)
     }
 
     notepad = JSON.parse(notepadData);
@@ -174,25 +198,41 @@ const drawNotes = () => {
 
     const newChildren = [];
 
-    const notes = notepad["notes"];
-
-    for(let key in idAssociations){
-        const id = idAssociations[key]
-        const note = newNote(notes[id], key);
-        newChildren.push(note);
+    const notes = notepad.notes;
+    console.log(notepad)
+    for(let note of notes){
+        // console.log(note)
+        const noteObject = newNote(note.content, note.localId);
+        newChildren.push(noteObject);
     }
-    
+    // console.log(newChildren);
     noteTable.replaceChildren(...newChildren);
 }
 
-const setNotes = (notepad) => {
-    const notes = notepad["notes"];
+// const setNotes = (notepad) => {
+//     const notes = notepad["notes"];
+//     nextID = 0;
+//     idAssociations = {};
+//     for(key in notes){
+//         idAssociations[nextID] = key;
+//         nextID++;
+//     }
+// }
+
+const parseNotepadNotes = (notepadData) => {
+    const rawNotes = notepadData.notes;
+    const notesArray = []
     nextID = 0;
-    idAssociations = {};
-    for(key in notes){
-        idAssociations[nextID] = key;
-        nextID++;
+    for (serverId of Object.keys(rawNotes)) {
+        notesArray.push({
+            serverId,
+            content: rawNotes[serverId],
+            localId: nextID
+        })
+        idAssociations[nextID] = serverId;
+        nextID += 1;
     }
+    return notesArray;
 }
 
 const updateState = async () => {
@@ -205,13 +245,21 @@ const updateState = async () => {
         notepad = await res.json();
         setNotepadDescription();
         setNotepadName();
-        setNotes(notepad);
+        notepad.notes = parseNotepadNotes(notepad)
         drawNotes();
     }
 }
 
-const sendEditRequest = (localID, newText) => {
-    console.log(localID, newText)
+
+const sendEditRequest = (localId, newText) => {
+    console.log(localId, newText)
+
+    for (let note of notepad.notes) {
+        if (note.localId == localId) {
+            note.content = newText;
+            break;
+        }
+    }
 
     const request = {
         "url": `${url}/notepad/${notepad["notepadName"]}/`,
@@ -226,7 +274,8 @@ const sendEditRequest = (localID, newText) => {
         })
     };
 
-    executeRequest(request, localID);
+    executeRequest(request, localId);
+    console.log(notepad.notes)
 }
 
 const newNote = (noteText, id) => {
@@ -237,8 +286,8 @@ const newNote = (noteText, id) => {
     // list of icons
     const iconList = document.createElement("div");
     note.appendChild(iconList);
-    iconList.appendChild(document.createElement("i"))
-        .setAttribute("class", "fas fa-arrows-alt");
+    // iconList.appendChild(document.createElement("i"))
+    //     .setAttribute("class", "fas fa-arrows-alt");
 
     const trash = document.createElement("i");
     trash.setAttribute("class", "far fa-trash-alt");
@@ -247,8 +296,8 @@ const newNote = (noteText, id) => {
 
     iconList.appendChild(document.createElement("i"))
         .setAttribute("class", "fas fa-pencil-alt");
-    iconList.appendChild(document.createElement("i"))
-        .setAttribute("class", "fas fa-palette");
+    // iconList.appendChild(document.createElement("i"))
+        // .setAttribute("class", "fas fa-palette");
 
     // checkbox
     checkbox = note.appendChild(document.createElement("input"));
@@ -292,42 +341,39 @@ const handleDescriptionChange = () => {
     executeRequest(request, undefined)
 }
 
+const sortNotes = () => {
+    let notes = notepad.notes;
+    notes.sort((a, b) => {
+        if (a.content < b.content) {
+            return -1
+        }
+        else if (a.content > b.content) {
+            return 1
+        }
+        return 0});
+    notepad.notes = notes;
+    drawNotes();
+}
+
+const download = (filename, text) => {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    }
+    else {
+        pom.click();
+    }
+}
+
+const notesToJson = () => {
+    const notepadString = JSON.stringify(notepad)
+    download('notes.json', notepadString)
+}
 
 loadNotepadData();
-sync();
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCwQAkUO7gIGop8ykEL9oyGuY5376iTSBw",
-    authDomain: "anonynoteclone.firebaseapp.com",
-    projectId: "anonynoteclone",
-    storageBucket: "anonynoteclone.appspot.com",
-    messagingSenderId: "285797775898",
-    appId: "1:285797775898:web:b7fb75ca0a0eed7441afa3",
-    measurementId: "G-R57G8TM40B"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const messaging = firebase.messaging();
-
-// function requestPermission() {
-messaging.requestPermission()
-         .then(() => {
-            console.log("Permission Granted");
-            return messaging.getToken();
-         })
-         .then((token) => {
-            console.log(token)
-         })
-         .catch((e) =>{
-            console.log("Error", e)
-         })
-messaging.onMessage((payload) => {
-    console.log(payload)
-})
-
-// }
-
-// requestPermission();
-
-// document.addEventListener('click', requestPermission);
+sync()

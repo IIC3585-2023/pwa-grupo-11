@@ -60,11 +60,11 @@
                 <i class='far fa-trash-alt'></i> 
                 <span>Delete all</span>
             </a></li>
-            <li><a class="active" id="nav-sort" href="#sort">
+            <li onclick="sortNotes()"><a class="active" id="nav-sort" href="#sort">
                 <i class='fas fa-sliders-h'></i> 
                 <span>Sort</span>
             </a></li>
-            <li><a class="active" id="nav-json" href="#json">
+            <li onclick="notesToJson()"><a class="active" id="nav-json" href="#json">
                 <i class='fas fa-code'></i> 
                 <span>JSON</span>
             </a></li>
@@ -87,7 +87,7 @@
     <br>
 
     <div id="note-table">
-        <div id="table-header">aa</div>
+        <div id="table-header">Notes</div>
         
         <div id="notes">
         </div>
@@ -95,7 +95,7 @@
     </div>
 
     <br>
-    <button id="fetchButton">Fetch</button>
+    <!-- <button id="fetchButton">Fetch</button> -->
     <script src='https://www.gstatic.com/firebasejs/4.2.0/firebase-app.js'></script>
     <script src='https://www.gstatic.com/firebasejs/4.2.0/firebase-messaging.js'></script>
     <!-- <script src="app.js"></script> -->

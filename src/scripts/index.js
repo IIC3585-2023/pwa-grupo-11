@@ -15,7 +15,7 @@ const createNotepad = async () => {
     if(res.statusText == "cache-network miss"){
         notepadData = {
             "description": "",
-            "notes": {},
+            "notes": [],
             "notepadName": notepadName,
             "local": true
         };
@@ -27,8 +27,7 @@ const createNotepad = async () => {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            "type": "createBoard",
-            "body": ""
+            "type": "createBoard"
         };
 
         const queuedRequests = [];
