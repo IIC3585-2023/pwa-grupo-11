@@ -377,3 +377,33 @@ const notesToJson = () => {
 
 loadNotepadData();
 sync()
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCwQAkUO7gIGop8ykEL9oyGuY5376iTSBw",
+    authDomain: "anonynoteclone.firebaseapp.com",
+    projectId: "anonynoteclone",
+    storageBucket: "anonynoteclone.appspot.com",
+    messagingSenderId: "285797775898",
+    appId: "1:285797775898:web:b7fb75ca0a0eed7441afa3",
+    measurementId: "G-R57G8TM40B"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+// function requestPermission() {
+messaging.requestPermission()
+         .then(() => {
+            console.log("Permission Granted");
+            return messaging.getToken();
+         })
+         .then((token) => {
+            console.log(token)
+         })
+         .catch((e) =>{
+            console.log("Error", e)
+         })
+messaging.onMessage((payload) => {
+    alert('Hay informacion nueva, haz Refresh!')
+})
