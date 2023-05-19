@@ -57,6 +57,7 @@ const networkFirstThenCache = async (request) => {
             return response
         } 
         catch (error) {
+            console.log(error)
             return new Response("", {"status": 404, "statusText": "network miss"});
         }
     }
