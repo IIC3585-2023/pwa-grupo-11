@@ -69,7 +69,8 @@ const networkFirstThenCache = async (request) => {
             console.log('Falling back to cache...')
             const res = await cache.match(request)
             console.log(request.url.startsWith(API_URL));
-            if(res == undefined || request.url.startsWith(API_URL) ) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
+            if(res == undefined) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
+            // if(res == undefined || request.url.startsWith(API_URL) ) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
             return res
         }
     }
