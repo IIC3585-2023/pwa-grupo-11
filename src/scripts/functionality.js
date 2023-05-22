@@ -170,7 +170,16 @@ function deleteNotes() {
 
 function editNote(index) {
     const note = document.getElementById("notes").children[index];
-    note.setAttribute("")
+    const textArea = note.getElementsByTagName("textarea")[0];
+
+    if (textArea.readOnly) {
+        textArea.setAttribute("class", "enabled-edit");
+    } else {
+        textArea.setAttribute("class", "disabled-edit");
+
+    }
+    textArea.readOnly = !textArea.readOnly;
+
 }
 
 const getNotificationToken = () => {
@@ -353,6 +362,7 @@ const newNote = (noteText, id) => {
     const noteTextInput = document.createElement("textarea");
     // noteTextInput.setAttribute("type", "text");
     noteTextInput.setAttribute("cols", "30");
+    noteTextInput.setAttribute("class", "disabled-edit");
     noteTextInput.readOnly = true;
     noteTextInput.value = String(noteText);
     noteTextInput.style.height = ""; // Reset the height

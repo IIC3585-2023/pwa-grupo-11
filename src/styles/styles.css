@@ -273,15 +273,24 @@ input[type="checkbox"]:checked::before {
 }
 
 .note textarea {
+    font-size: larger;
     border: none;
     outline: none;
     width: 380px;
     resize: none;
-    /* word-wrap: break-word; */
+}
+
+.note .disabled-edit{
     word-wrap: break-word;
     color: white;
-    /* vertical-align: text-top; */
-    background-color: black;
+    background-color: transparent;
+    overflow-y: hidden; /* Hide vertical scrollbar */
+}
+
+.note .enabled-edit{
+    word-wrap: break-word;
+    color: black;
+    background-color: white;
     overflow-y: hidden; /* Hide vertical scrollbar */
 }
 
