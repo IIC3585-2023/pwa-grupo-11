@@ -168,6 +168,11 @@ function deleteNotes() {
     parent.replaceChildren(...newChildren);
 }
 
+function editNote(index) {
+    const note = document.getElementById("notes").children[index];
+    note.setAttribute("")
+}
+
 const getNotificationToken = () => {
     console.log("getNotificationToken", notificationPermission)
     if(!notificationPermission) return;
@@ -329,8 +334,10 @@ const newNote = (noteText, id) => {
     trash.setAttribute("onclick", `deleteNote(${id})`);
     iconList.appendChild(trash);
 
-    iconList.appendChild(document.createElement("i"))
-        .setAttribute("class", "fas fa-pencil-alt");
+    const edit = document.createElement("i")
+    edit.setAttribute("class", "fas fa-pencil-alt");
+    edit.setAttribute("onclick", `editNote(${id})`);
+    iconList.appendChild(edit)
     // iconList.appendChild(document.createElement("i"))
         // .setAttribute("class", "fas fa-palette");
 
@@ -343,9 +350,12 @@ const newNote = (noteText, id) => {
     // const p = document.createElement("p");
     // p.innerHTML = noteText;
     // note.appendChild(p);
-    const noteTextInput = document.createElement("input");
-    noteTextInput.setAttribute("type", "text");
+    const noteTextInput = document.createElement("textarea");
+    // noteTextInput.setAttribute("type", "text");
+    noteTextInput.setAttribute("cols", "30");
+    noteTextInput.readOnly = true;
     noteTextInput.value = String(noteText);
+    noteTextInput.style.height = ""; // Reset the height
     noteTextInput.addEventListener("change", (e) => sendEditRequest(id, noteTextInput.value));
     note.appendChild(noteTextInput);
 
