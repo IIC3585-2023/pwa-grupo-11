@@ -1,8 +1,14 @@
+html {
+    height: 100%;
+}
+
 body {
     background-color: #282828;
     font-family: 'Mukta',sans-serif;
     font-weight: 600;
     margin: 0%;
+    min-height: 100%;
+    padding-bottom: 50px;
 }
 
 .gg-menu {
@@ -17,6 +23,7 @@ body {
     font-size: xx-large;
     border: none;
     outline: none;
+    text-decoration: underline #004D66 5px;
 }
 #note-description {
     color: white;
@@ -31,10 +38,11 @@ body {
 /* INPUTS */
 .input-container {
     display: flex; /* Use flexbox to layout the input element horizontally */
-    width: calc(100% - 20px); /* Subtract 10px from the width to account for the right margin */
-    height: 50px;
-    margin-left: 10px;
-    margin-right: 10px;
+    width: 100%; /* Subtract 10px from the width to account for the right margin */
+    height: 80px;
+    /* margin-left: 5%; */
+    /* margin-right: 5%; */
+    /* margin-top: 100px; */
   }
   
 .input-container input {
@@ -42,12 +50,13 @@ body {
     border: none; /* Remove the border on the input element */
     padding: 10px; /* Add some padding to the input element for better readability */
     outline: none;
-    font-size: larger;
+    font-size: 40px;
 }
 
 #short-note-button {
-    width: 50px;
-    height: 50px;
+    margin-left: 10px;
+    width: 80px;
+    height: 80px;
     background-color: #269CE9;
     cursor: pointer;
 }
@@ -80,7 +89,7 @@ input:-ms-input-placeholder { /* Internet Explorer */
 /* TOP NAVBAR */
 #navbar-top {
     background-color: #004D66;
-    height: 63px;
+    height: 5%;
     position: fixed;
     top: 0;
     left: 0;
@@ -95,8 +104,9 @@ ul {
     /* background-color: #004D66; */
 }
   
-li {
+#navbar-top li {
     float: left;
+    font-size: large;
 }
 
 li:last-child {
@@ -179,6 +189,15 @@ li a:hover:not(.active) {
 
 #table-header { 
     background-color: #004D66;
+    min-height: 50px;
+    font-family: Snell Roundhand, cursive;
+}
+
+#table-title {
+    font-size: xx-large;
+    float: right;
+    padding-top: 0px;
+    margin-right: 20px;
 }
 
 .note {
@@ -264,4 +283,110 @@ input[type="checkbox"]:checked::before {
     /* vertical-align: text-top; */
     background-color: black;
     overflow-y: hidden; /* Hide vertical scrollbar */
+}
+
+#app-container {
+    margin-left: 5%;
+    margin-right: 5%;
+    min-height: 100%;
+}
+
+
+.button-row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.button-row button {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.custom-button-container {
+    min-height: 60px;
+    height: 60px;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    gap: 5px;
+}
+
+#notes-buttons-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.custom-button {
+    height: 100%;
+    font-size: x-large;
+    border-width: 0;
+}
+
+.helper {
+    width: 1px;
+    height: 100%;
+    float: left;
+}
+
+.inner {
+    float: left;
+}
+
+.button-content {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.button-content i {
+    /* float: center; */
+    margin-top: 6px;
+}
+
+.note {
+    height: 80px;
+}
+
+.note input {
+    font-size: xx-large;
+}
+
+
+@media only screen and (max-width: 1000px) {
+    .note {
+        height: 170px;
+    }
+
+    #table-header {
+        min-height: 80px;
+    }
+
+    #table-title {
+        font-size: xx-large;
+        float: right;
+        padding-top: 10px;
+        margin-right: 20px;
+    }
+
+    .input-container {
+        display: flex; /* Use flexbox to layout the input element horizontally */
+        width: 100%;
+        height: 120px;
+    }
+
+    #short-note-button {
+        margin-left: 10px;
+        width: 120px;
+        height: 120px;
+        background-color: #269CE9;
+        cursor: pointer;
+    }
+
+    .custom-button-container {
+        min-height: 80px;
+        height: 80px;
+    }
 }
