@@ -1,5 +1,28 @@
-// importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
-// importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/4.2.0/firebase-app.js')
+importScripts('https://www.gstatic.com/firebasejs/4.2.0/firebase-messaging.js')
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCwQAkUO7gIGop8ykEL9oyGuY5376iTSBw",
+    authDomain: "anonynoteclone.firebaseapp.com",
+    projectId: "anonynoteclone",
+    storageBucket: "anonynoteclone.appspot.com",
+    messagingSenderId: "285797775898",
+    appId: "1:285797775898:web:b7fb75ca0a0eed7441afa3",
+    measurementId: "G-R57G8TM40B"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+messaging.setBackgroundMessageHandler((payload) => {
+    const title = "Anonynote";
+    const options = {
+        body: payload.data.status
+    }
+    return self.registration.showNotification(title, options)
+})
+
 const staticAssets = [
     './',
     './index.html',
@@ -46,7 +69,8 @@ const networkFirstThenCache = async (request) => {
             console.log('Falling back to cache...')
             const res = await cache.match(request)
             console.log(request.url.startsWith(API_URL));
-            if(res == undefined || request.url.startsWith(API_URL) ) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
+            if(res == undefined) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
+            // if(res == undefined || request.url.startsWith(API_URL) ) return new Response('{}', {"status": 404, "statusText": "cache-network miss"});
             return res
         }
     }
@@ -57,7 +81,6 @@ const networkFirstThenCache = async (request) => {
             return response
         } 
         catch (error) {
-            console.log(error)
             return new Response("", {"status": 404, "statusText": "network miss"});
         }
     }
