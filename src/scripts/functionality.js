@@ -66,7 +66,6 @@ const executeRequest = async (request, id) => {
 }
 
 const createNote = async() =>{
-
     const noteText = document.getElementById("short-note").value;
 
     const note = newNote(noteText, nextID);
