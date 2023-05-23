@@ -47,7 +47,8 @@ const createNotepad = async () => {
 const registerSW = async () => {
     if ('serviceWorker' in navigator) {
         try {
-            const registration = await navigator.serviceWorker.register('../../firebase-messaging-sw.js', {scope: './'});
+            console.log(window.location.pathname)
+            const registration = await navigator.serviceWorker.register('./../../firebase-messaging-sw.js', {scope: './'});
             if (registration.installing) {
             console.log('Service worker installing');
             } else if (registration.waiting) {
