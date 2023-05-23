@@ -273,7 +273,7 @@ input[type="checkbox"]:checked::before {
 }
 
 .note textarea {
-    font-size: larger;
+    font-size:x-large;
     border: none;
     outline: none;
     width: 380px;
