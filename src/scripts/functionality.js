@@ -134,10 +134,8 @@ function deleteNote(index) {
     
 
     // modify local id
-    // pesimo codigo pero funciona
+    // pesimo codigo pero funciona equisde
     newChildren.forEach( (child, index) => {
-        // child.localId = index;
-        // child.children[0].children[0].onclick = `deleteNote(${index})`
         console.log("WTFF")
         child.children[0].children[1].setAttribute("onclick", `editNote(${index})`)
         child.children[1].setAttribute("onclick", `colorNote(${index})`)
