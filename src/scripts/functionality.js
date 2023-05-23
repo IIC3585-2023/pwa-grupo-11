@@ -194,11 +194,14 @@ function editNote(index) {
 
 }
 
-const getNotificationToken = () => {
+const getNotificationToken = async () => {
     console.log("getNotificationToken", notificationPermission)
     if(!notificationPermission) return;
     // if(notificationToken != undefined) return;
-    messaging.getToken()
+    const registration = await navigator.serviceWorker.ready;
+    console.log(registration)
+
+    messaging.getToken({serviceWorkerRegistration: registration,})
              .then((token) =>{
                 notificationToken = token;
                 console.log("set notification token", token)
