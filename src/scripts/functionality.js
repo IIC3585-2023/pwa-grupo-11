@@ -66,7 +66,10 @@ const executeRequest = async (request, id) => {
 }
 
 const createNote = async() =>{
-    const noteText = document.getElementById("short-note").value;
+    const shortNote = document.getElementById("short-note");
+    noteText = shortNote.value;
+    shortNote.value = ""
+    console.log("WWWWHEJWIEOJR")
 
     const note = newNote(noteText, nextID);
     
@@ -128,6 +131,17 @@ function deleteNote(index) {
             newChildren.push(children[idx])
         }
     }
+    
+
+    // modify local id
+    // pesimo codigo pero funciona
+    newChildren.forEach( (child, index) => {
+        // child.localId = index;
+        // child.children[0].children[0].onclick = `deleteNote(${index})`
+        console.log("WTFF")
+        child.children[0].children[1].setAttribute("onclick", `editNote(${index})`)
+        child.children[1].setAttribute("onclick", `colorNote(${index})`)
+    });
 
     notepad.notes.splice(deleteIdx, 1);
 
@@ -328,6 +342,7 @@ const sendEditRequest = (localId, newText) => {
 }
 
 const newNote = (noteText, id) => {
+
     const note = document.createElement("div");
     note.setAttribute("class", "note");
     note.id = id;
