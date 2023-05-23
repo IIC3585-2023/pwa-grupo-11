@@ -58,7 +58,7 @@ const registerSW = async () => {
 
         } catch (error) {
             console.log('SW failed');
-
+            console.log(error)
         }
     }
 };
